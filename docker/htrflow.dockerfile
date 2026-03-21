@@ -31,11 +31,16 @@ RUN uv venv --python ${PYTHON_VERSION}
 COPY uv.lock pyproject.toml /app/
 RUN uv sync --frozen --no-install-project
 
+
 COPY src/ /app/src/
 COPY LICENSE README.md /app/
 
+
 # Install project
 RUN uv sync --frozen
+
+# Ensure log directory exists
+RUN mkdir -p /app/logs/htrflow
 
 FROM nvidia/cuda:${CUDA_VERSION}-base-ubuntu${UBUNTU_VERSION} AS runtime
 
