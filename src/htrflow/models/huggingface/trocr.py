@@ -179,6 +179,22 @@ class WordLevelTrOCR(TrOCR):
     ```
     """
 
+    def __init__(
+        self,
+        model: str,
+        processor: str | None = None,
+        model_kwargs: dict[str, Any] | None = None,
+        processor_kwargs: dict[str, Any] | None = None,
+        **kwargs,
+    ):
+        # Word segmentation relies on real cross-attention weights
+        # (`output_attentions=True`), which the `sdpa` attention
+        # implementation (the current default) silently ignores. Force
+        # `eager` unless the caller explicitly requested something else.
+        model_kwargs = dict(model_kwargs or {})
+        model_kwargs.setdefault("attn_implementation", "eager")
+        super().__init__(model, processor, model_kwargs, processor_kwargs, **kwargs)
+
     def _predict(self, images: list[Image], **generation_kwargs) -> list[list[Text]]:
         config_overrides = {
             "output_scores": True,
@@ -221,7 +237,7 @@ class WordLevelTrOCR(TrOCR):
         attentions = aggregate_attentions(outputs.cross_attentions)
 
         # Calculate the shape of the attention heatmap
-        image_shape = self.processor.feature_extractor.size
+        image_shape = self.processor.image_processor.size
         patch_size = self.model.config.encoder.patch_size
         heatmap_height = image_shape["height"] // patch_size
         heatmap_width = image_shape["width"] // patch_size
@@ -240,7 +256,11 @@ class WordLevelTrOCR(TrOCR):
         results = []
 
         for i, sequence in enumerate(outputs.sequences):
-            tokens = self.processor.batch_decode(sequence)
+            # Decode each token id as its own single-token sequence rather than
+            # passing the whole 1-D tensor to `batch_decode` directly: newer
+            # tokenizers backends treat a 1-D input as one sequence (batch size 1)
+            # instead of iterating it as one token per batch element.
+            tokens = self.processor.batch_decode([[token_id] for token_id in sequence])
 
             # Deriving the words from the line (and not by joining the tokens) is a
             # work-around in order to decode special characters correctly.
