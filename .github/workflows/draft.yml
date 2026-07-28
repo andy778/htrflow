@@ -3,17 +3,16 @@ name: Draft a release
 on:
   workflow_dispatch:
 
-permissions:
-  contents: write 
-
 jobs:
   draft-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Check out code
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
-          persist-credentials: true  
+          persist-credentials: true
 
       - name: Set up uv and Python environment
         uses: ./.github/actions/uv
