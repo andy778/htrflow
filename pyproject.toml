@@ -21,7 +21,7 @@ dependencies = [
     "numpy",
     "opencv-python-headless >=4.11.0.86",
     "tqdm >=4.66.2,<5",
-    "xmlschema >=3.0.2,<4",
+    "xmlschema >=4.3.2,<5",
     "typer>=0.12.0",
     "rich >=13.7.1",
     "jiwer >=4.0",
@@ -41,8 +41,8 @@ Repository = "https://github.com/AI-Riksarkivet/htrflow"
 htrflow = "htrflow.cli:app"
 
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "pytest >=8.0.1",
     "pytest-cov >=4.1.0",
     "pytest-github-actions-annotate-failures >=0.2.0",
@@ -69,7 +69,10 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.metadata]
-allow-direct-references = true  
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/htrflow"]
 
 [tool.pytest.ini_options]
 addopts = "-v --cov htrflow --cov-report term-missing --no-cov-on-fail"
