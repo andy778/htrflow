@@ -1,4 +1,4 @@
-import numpy as np
+import torch
 from transformers import PreTrainedTokenizerBase, VisionEncoderDecoderModel
 
 
@@ -25,9 +25,9 @@ class ConfidenceMixin:
         is_beam_search = hasattr(outputs, "beam_indices")
         transition_scores = self._compute_transition_scores(outputs).cpu()
         length_penalty = self.model.generation_config.length_penalty if is_beam_search else 1.0
-        output_length = np.sum(transition_scores.numpy() < 0, axis=1)
+        output_length = (transition_scores < 0).sum(axis=1)
         scores = transition_scores.sum(axis=1) / (output_length**length_penalty)
-        return np.exp(scores).tolist()
+        return torch.exp(scores).tolist()
 
     def compute_confidence_per_token(self, outputs) -> list[tuple[str, float]]:
         """
@@ -37,7 +37,7 @@ class ConfidenceMixin:
         (token, score) tuples.
         """
         transition_scores = self._compute_transition_scores(outputs)
-        transition_scores = np.exp(transition_scores.cpu()).tolist()
+        transition_scores = torch.exp(transition_scores.cpu()).tolist()
         result = []
         for sequence, scores in zip(outputs.sequences, transition_scores):
             prompt_end_index = len(sequence) - len(scores)
