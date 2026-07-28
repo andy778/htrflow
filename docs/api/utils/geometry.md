@@ -1,3 +1,0 @@
-# Geometry
-
-<!-- :::htrflow.utils.geometry -->
