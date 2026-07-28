@@ -1,12 +1,14 @@
 name: Security Scorecard
 
 # Runs OpenSSF Scorecard (https://github.com/ossf/scorecard) against this repo
-# and commits the results as a plain JSON file under .github/scorecard/. This
-# is intentionally kept private: publish_results is false, so nothing is sent
-# to the public Scorecard API or badge, and the results aren't linked from any
-# public docs. It's informational only — a baseline to track over time, not a
-# CI gate. Weekly schedule only takes effect once this workflow exists on the
-# repo's default branch; workflow_dispatch always works.
+# twice: once as SARIF, uploaded to this repo's own Security > Code scanning
+# tab (private to this repo, not the public Scorecard API/badge), and once as
+# JSON, committed to .github/scorecard/results.json as a plain-text baseline
+# to track over time. publish_results is false in both cases, so nothing is
+# sent to the public Scorecard API or badge. Informational only — a baseline
+# to track and improve, not a CI gate. Weekly schedule only takes effect once
+# this workflow exists on the repo's default branch; workflow_dispatch always
+# works.
 
 on:
   schedule:
@@ -21,15 +23,28 @@ jobs:
     permissions:
       contents: write
       id-token: write
+      security-events: write
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           persist-credentials: true
 
-      - name: Run OpenSSF Scorecard
-        uses: ossf/scorecard-action@v2.4.4
+      - name: Run OpenSSF Scorecard (SARIF, for the Security tab)
+        uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: false
+
+      - name: Upload SARIF to code scanning
+        uses: github/codeql-action/upload-sarif@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        with:
+          sarif_file: results.sarif
+
+      - name: Run OpenSSF Scorecard (JSON, for the repo baseline file)
+        uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
         with:
           results_file: scorecard-results.json
           results_format: json
