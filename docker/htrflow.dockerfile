@@ -1,9 +1,8 @@
-ARG CUDA_VERSION=12.1.0
-ARG UBUNTU_VERSION=22.04
 ARG PYTHON_VERSION=3.10
 ARG DEBIAN_FRONTEND=noninteractive
 
-FROM nvidia/cuda:${CUDA_VERSION}-base-ubuntu${UBUNTU_VERSION} AS builder
+# nvidia/cuda:12.1.0-base-ubuntu22.04
+FROM nvidia/cuda@sha256:40042016a816cbbe0504dd0a396e7cfc036a8aa43f5694af60dd6f8f87d24e52 AS builder
 
 ARG PYTHON_VERSION
 ARG DEBIAN_FRONTEND
@@ -17,7 +16,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/
+# ghcr.io/astral-sh/uv:latest
+COPY --from=ghcr.io/astral-sh/uv@sha256:77280f2f771df71f90786c314fe1bbc1e023feac652969bbf139c280babf2eb7 /uv /bin/
 
 WORKDIR /app
 
@@ -37,7 +37,8 @@ COPY LICENSE README.md /app/
 # Install project
 RUN uv sync --frozen
 
-FROM nvidia/cuda:${CUDA_VERSION}-base-ubuntu${UBUNTU_VERSION} AS runtime
+# nvidia/cuda:12.1.0-base-ubuntu22.04
+FROM nvidia/cuda@sha256:40042016a816cbbe0504dd0a396e7cfc036a8aa43f5694af60dd6f8f87d24e52 AS runtime
 
 ARG PYTHON_VERSION
 ARG DEBIAN_FRONTEND

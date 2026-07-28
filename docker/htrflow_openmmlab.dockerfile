@@ -1,5 +1,7 @@
-FROM huggingface/transformers-pytorch-gpu:4.41.2
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/
+# huggingface/transformers-pytorch-gpu:4.41.2
+FROM huggingface/transformers-pytorch-gpu@sha256:dba42187fd786ef209aecb92dbf8780bbffd97adffd32ee86cb2fccc448387ec
+# ghcr.io/astral-sh/uv:latest
+COPY --from=ghcr.io/astral-sh/uv@sha256:77280f2f771df71f90786c314fe1bbc1e023feac652969bbf139c280babf2eb7 /uv /bin/
 
 
 WORKDIR /app
