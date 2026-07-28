@@ -3,6 +3,9 @@ name: Draft a release
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   draft-deploy:
     runs-on: ubuntu-latest
