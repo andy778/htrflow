@@ -17,3 +17,12 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
+
+  - package-ecosystem: "docker"
+    directory: "/docker"
+    target-branch: "qa"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
