@@ -10,6 +10,12 @@ This is a real end-to-end run: it downloads the two documented models
 so it's slow and needs network access. The transcription is compared to the
 documented expected result with a word error rate, not an exact match, since
 minor decoding differences (dependency versions, hardware) are expected.
+
+Only example_1 runs in default CI (each case reloads and reruns both models
+on CPU, so 3 cases roughly triples the wall time for the same "does the
+documented pipeline still work" signal). example_2 and example_3 are marked
+`extended` and skipped by CI's default `-m` filter; run them locally or
+deliberately with `pytest -m extended`.
 """
 
 from pathlib import Path
@@ -96,7 +102,15 @@ EXAMPLES = {
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize("image_path,expected_text", EXAMPLES.values(), ids=EXAMPLES.keys())
+@pytest.mark.parametrize(
+    "image_path,expected_text",
+    [
+        EXAMPLES["example_1"],
+        pytest.param(*EXAMPLES["example_2"], marks=pytest.mark.extended),
+        pytest.param(*EXAMPLES["example_3"], marks=pytest.mark.extended),
+    ],
+    ids=list(EXAMPLES.keys()),
+)
 def test_quickstart_pipeline(image_path, expected_text, tmp_path, monkeypatch):
     image_path = Path(image_path).resolve()
     assert image_path.exists(), f"quickstart example image not found: {image_path}"
