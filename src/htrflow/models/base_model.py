@@ -4,6 +4,17 @@ import torch
 from PIL import Image
 
 
+def _detect_device() -> str:
+    """Best available torch device: cuda (or ROCm, same API) > xpu > mps > cpu."""
+    if torch.cuda.is_available():
+        return "cuda"
+    if hasattr(torch, "xpu") and torch.xpu.is_available():
+        return "xpu"
+    if torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
+
+
 class BaseModel(ABC):
     """
     Model base class
@@ -19,8 +30,10 @@ class BaseModel(ABC):
         """
         Arguments:
             device: Model device as a string, recognizable by torch. Defaults
-                to `None`, which sets the device to `cuda` or `cpu` depending
-                on availability.
+                to `None`, which auto-detects the best available device:
+                `cuda` (also covers AMD via ROCm, which exposes itself
+                through the same torch.cuda API), then `xpu` (Intel GPUs),
+                then `mps` (Apple Silicon), falling back to `cpu`.
             allow_tf32: Allow running matrix multiplications with TensorFloat-32.
                 This speeds up inference at the expense of inference quality.
                 On Ampere and newer CUDA devices, enabling TF32 can improve
@@ -36,7 +49,7 @@ class BaseModel(ABC):
         """
         self.metadata = {"model_class": self.__class__.__name__}
         if device is None:
-            device = "cuda" if torch.cuda.is_available() else "cpu"
+            device = _detect_device()
         self.device = torch.device(device)
 
         if torch.cuda.is_available():
