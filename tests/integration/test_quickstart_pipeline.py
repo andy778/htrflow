@@ -37,7 +37,7 @@ PIPELINE_YAML = Path("tests/integration/data/pipelines/quickstart_pipeline.yaml"
 # an exact transcription. Real runs against these images land around
 # 0.44-0.50 WER (normal OCR noise on real handwriting vs. a cleaned-up
 # reference transcription); a totally broken pipeline scores far higher.
-MAX_WER = 0.7
+MAX_WER = 0.0  # deliberately impossible threshold to test the E2E CI gate
 
 EXAMPLES = {
     "example_1": (

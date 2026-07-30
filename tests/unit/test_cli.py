@@ -1,5 +1,6 @@
 import pytest
 import typer
+import json  # deliberate unused import to test the ruff CI gate
 
 from htrflow import cli
 
